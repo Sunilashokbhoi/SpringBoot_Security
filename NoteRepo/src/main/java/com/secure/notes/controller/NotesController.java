@@ -12,7 +12,41 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/notes")
 public class NotesController {
+
     @Autowired
+    private INoteService noteService;
+
+    @PostMapping
+    public Note createNote(@RequestBody String content,
+                           @AuthenticationPrincipal UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        System.out.println("USER DETAILS: " + username);
+        return noteService.createNoteForUser(username, content);
+    }
+
+    @GetMapping
+    public List<Note> getUserNotes(@AuthenticationPrincipal UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        System.out.println("USER DETAILS: " + username);
+        return noteService.getNoteForUser(username);
+    }
+
+    @PutMapping("/{noteId}")
+    public Note updateNote(@PathVariable Long noteId,
+                           @RequestBody String content,
+                           @AuthenticationPrincipal UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        return noteService.updateNoteForUser(noteId, content, username);
+    }
+
+    @DeleteMapping("/{noteId}")
+    public void deleteNote(@PathVariable Long noteId,
+                           @AuthenticationPrincipal UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        noteService.deleteNoteForUser(noteId, username);
+    }
+}
+   /* @Autowired
     INoteService noteService;
     @PostMapping
     public Note createNote(@RequestBody String content , @AuthenticationPrincipal UserDetails userDetails){
@@ -38,5 +72,4 @@ public class NotesController {
     public void deleteNote(@PathVariable Long noteId ,@AuthenticationPrincipal UserDetails userDetails){
         String username = userDetails.getUsername();
          noteService.deleteNoteForUser(noteId,username);
-    }
-}
+    }*/

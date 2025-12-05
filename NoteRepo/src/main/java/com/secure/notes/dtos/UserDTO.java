@@ -15,13 +15,13 @@ public class UserDTO {
     private Long userId;
     private String userName;
     private String email;
-    private boolean accountNotLocked;
-    private boolean accountNotExpired;
+    private boolean accountNonLocked;
+    private boolean accountNonExpired;
     private boolean credentialsNonExpired;
     private boolean enabled;
     private LocalDate credentialsExpiryDate;
-    private LocalDate sccountExpiryDate;
-    private String twoFactorEnabled;
+    private LocalDate accountExpiryDate;
+    private String twoFactorSecret;
     private boolean isTwoFactorEnabled;
     private String signUpMethod;
     private Role role;
