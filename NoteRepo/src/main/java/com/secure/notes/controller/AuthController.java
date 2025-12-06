@@ -44,6 +44,15 @@ public class AuthController {
     @Autowired
     AuthenticationManager authenticationManager;
 
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    RoleRepository roleRepository;
+
+    @Autowired
+    PasswordEncoder encoder;
+
     @PostMapping("/public/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         Authentication authentication;
@@ -77,86 +86,36 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-  /*  @Autowired
-    JwtUtils jwtUtils;
-
-    @Autowired
-    AuthenticationManager authenticationManager;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    PasswordEncoder encoder;
-
-    @Autowired
-    IUserService userService;
-
-    @PostMapping("/public/singin")
-    public ResponseEntity<?> authenticationUser(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUsername(),
-                            loginRequest.getPassword()));
-        } catch (AuthenticationException exception) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("message", "Bad credentials");
-            map.put("status", false);
-            return new ResponseEntity<Object>(map, HttpStatus.NOT_FOUND);
-        }
-
-        //set the authentication
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        //specific to out implementation
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
-
-        //collection roles from the UsetDetails
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
-
-        //prepared the response body, new including the JWT token included in the response body
-        LoginResponse response = new LoginResponse(userDetails.getUsername(), roles, jwtToken);
-
-        //return the response enetity with the jwt token included in the response body
-        return ResponseEntity.ok(response);
-    }
-
     @PostMapping("/public/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
-        if (userRepository.existsByUserName(signupRequest.getUsername())) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest)
+    {
+        if(userRepository.existsByUserName(signupRequest.getUsername()))
+        {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use! "));
         }
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
+        if(userRepository.existsByEmail(signupRequest.getEmail())){
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already un user! "));
         }
-
         //Create new user's account
         User user = new User(signupRequest.getUsername(),
-                signupRequest.getEmail(),
+                             signupRequest.getEmail(),
                 encoder.encode(signupRequest.getPassword()));
 
         Set<String> strRoles = signupRequest.getRole();
-        Role role = new Role();
+        Role role;
 
-        if (strRoles == null || strRoles.isEmpty()) {
-            role = roleRepository.findByRoleName(AppRole.ROLE_USER).orElseThrow(
-                    () -> new RuntimeException("Error: Role is not found."));
-        } else {
+        if(strRoles == null && strRoles.isEmpty()){
+            role = roleRepository.findByRoleName(AppRole.ROLE_USER)
+                    .orElseThrow(()->new RuntimeException("Error: Role is not found"));
+        }else{
             String roleStr = strRoles.iterator().next();
-            if (roleStr.equals("admin")) {
-                role = roleRepository.findByRoleName(AppRole.ROLE_ADMIN).orElseThrow(() ->
-                        new RuntimeException("Error: Role is not found."));
+            if(roleStr.equals("admin")){
+                role = roleRepository.findByRoleName(AppRole.ROLE_ADMIN)
+                        .orElseThrow(()->new RuntimeException("Error: Role is not found."));
+            }else {
+                role = roleRepository.findByRoleName(AppRole.ROLE_USER)
+                        .orElseThrow(()-> new RuntimeException("Error: Role is not found."));
             }
-
-
             user.setAccountNonLocked(true);
             user.setAccountNonExpired(true);
             user.setCredentialsNonExpired(true);
@@ -165,40 +124,12 @@ public class AuthController {
             user.setAccountExpiryDate(LocalDate.now().plusYears(1));
             user.setTwoFactorEnabled(false);
             user.setSignUpMethod("email");
+
         }
         user.setRole(role);
         userRepository.save(user);
 
-        return  ResponseEntity.ok(new MessageResponse("User registered successfully! "));
+        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
-    @GetMapping("/user")
-    public ResponseEntity<?> getUserDetails(@AuthenticationPrincipal UserDetails userDetails){
-        User user = userService.findByUsername(userDetails.getUsername());
-
-        List<String> roles = userDetails.getAuthorities().stream().map(
-                item ->
-                        item.getAuthority()).collect(Collectors.toList());
-        UserInfoResponse response = new UserInfoResponse(
-                user.getUserId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.isAccountNonLocked(),
-                user.isAccountNonExpired(),
-                user.isCredentialsNonExpired(),
-                user.isEnabled(),
-                user.getCredentialsExpiryDate(),
-                user.getAccountExpiryDate(),
-                user.isTwoFactorEnabled(),
-                roles
-        );
-        return ResponseEntity.ok().body(response);
-    }
-
-    //just for demo purpose only
-    @GetMapping("/public/get")
-    public String get(){
-        return "Hello";
-    }
-*/
 }
