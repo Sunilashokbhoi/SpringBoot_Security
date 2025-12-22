@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/notes")
 public class NotesController {
@@ -16,7 +17,7 @@ public class NotesController {
     @Autowired
     private INoteService noteService;
 
-    @PostMapping
+    @PostMapping    
     public Note createNote(@RequestBody String content,
                            @AuthenticationPrincipal UserDetails userDetails) {
         String username = userDetails.getUsername();
