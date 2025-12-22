@@ -11,6 +11,8 @@ public class NoteService implements INoteService {
 
     @Autowired
     private NoteRepo noteRepository;
+    @Autowired
+    private AuditLogService auditLogService;
 
     @Override
     public Note createNoteForUser(String username, String content) {
@@ -18,6 +20,7 @@ public class NoteService implements INoteService {
         note.setContent(content);
         note.setOwnerUsername(username);
         Note savedNote = noteRepository.save(note);
+        auditLogService.logNoteCreation(username,note);
         return savedNote;
     }
 
@@ -27,12 +30,16 @@ public class NoteService implements INoteService {
                 -> new RuntimeException("Note not found"));
         note.setContent(content);
         Note updatedNote = noteRepository.save(note);
+        auditLogService.logNoteUpdate(username,note);
         return updatedNote;
     }
 
     @Override
     public void deleteNoteForUser(Long noteId, String username) {
+        Note note  = noteRepository.findById(noteId).orElseThrow(()->new RuntimeException("Not not found"));
+        auditLogService.logNoteDeletion(username,noteId);
         noteRepository.deleteById(noteId);
+
     }
 
     @Override
