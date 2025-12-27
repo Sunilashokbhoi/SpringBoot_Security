@@ -5,6 +5,7 @@ import com.secure.notes.model.Role;
 import com.secure.notes.model.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IUserService {
     void updateUserRole(Long userId, String roleName);
@@ -30,4 +31,8 @@ public interface IUserService {
     void generatePasswordResetToken(String email);
 
     void resetPassword(String token, String newPassword);
+
+    Optional<User> findByEmail(String email);
+
+    User registerUser(User user);
 }
