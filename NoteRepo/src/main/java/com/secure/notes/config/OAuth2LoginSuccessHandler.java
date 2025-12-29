@@ -41,7 +41,7 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
     @Autowired
     RoleRepository roleRepository;
 
-    @Value("@{frontend.url}")
+    @Value("${frontend.url}")
     private String frontendUrl;
 
     String username;
@@ -81,13 +81,13 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
 
                 userService.findByEmail(email)
                         .ifPresentOrElse(user -> {
-                            DefaultOAuth2User oAuth2User = new DefaultOAuth2User(
+                            DefaultOAuth2User oauthUser = new DefaultOAuth2User(
                                     List.of(new SimpleGrantedAuthority(user.getRole().getRoleName().name())),
                                                                                         attributes,
                                                                                         idAttributeKey
                             );
                             Authentication securityAuth = new OAuth2AuthenticationToken(
-                                    oAuth2User,List.of(new SimpleGrantedAuthority(user.getRole().getRoleName().name())),
+                                    oauthUser,List.of(new SimpleGrantedAuthority(user.getRole().getRoleName().name())),
                                     oAuth2AuthenticationToken.getAuthorizedClientRegistrationId());
                             SecurityContextHolder.getContext().setAuthentication(securityAuth);
                         },()->{
